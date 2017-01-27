@@ -12,6 +12,8 @@ export class JsonApiModel {
     if (data) {
       this.id = data.id;
       _.extend(this, data.attributes);
+      //make all relationships directly available on object
+      _.extend(this, data.relationships);
     }
   }
 
