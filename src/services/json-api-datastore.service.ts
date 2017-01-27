@@ -110,18 +110,68 @@ export class JsonApiDatastore {
       if (data.hasOwnProperty(key)) {
         if (data[key] instanceof JsonApiModel) {
           relationships = relationships || {};
-          let relationshipType: string = Reflect.getMetadata('JsonApiModelConfig', data[key].constructor).type;
-          relationships[key] = {
-            data: {
-              type: relationshipType,
-              id: data[key].id
-            }
-          };
+
+          if(_.isArray(data[key])){
+            // If hasmany
+            relationships[key] = { 
+              data: _.map(data[key], function (related_item:any){
+                let relationshipType = Reflect.getMetadata('JsonApiModelConfig', related_item.constructor).type;
+                return {
+                  type: relationshipType,
+                  id: related_item.id
+                };
+              })
+            };
+          }else{
+            // If not hasmany
+            let relationshipType: string = Reflect.getMetadata('JsonApiModelConfig', data[key].constructor).type;
+            relationships[key] = {
+              data: {
+                type: relationshipType,
+                id: data[key].id
+              }
+            };
+          }
+
         }
       }
     }
     return relationships;
   }
+
+  // JsonApiDatastore.prototype.getRelationships = function (data) {
+  //       var relationships, relationshipType;
+  //       for (var key in data) {
+  //           if (data.hasOwnProperty(key)) {
+  //               if ((data[key] instanceof json_api_model_1.JsonApiModel) || this.isHasManyObject(data[key])) {
+  //                   relationships = relationships || {};
+
+  //                   if (_.isArray(data[key])) {
+  //                     relationships[key] = { data: _.map(data[key], function (x){
+  //                       relationshipType = Reflect.getMetadata('JsonApiModelConfig', x.constructor).type;
+  //                       return {
+  //                             type: relationshipType,
+  //                             id: x.id
+  //                       };
+  //                       })
+  //                     };
+  //                   } else {
+  //                     relationshipType = Reflect.getMetadata('JsonApiModelConfig', data[key].constructor).type;
+  //                     relationships[key] = {
+  //                       data: {
+  //                           type: relationshipType,
+  //                           id: data[key].id
+  //                       }
+  //                     };
+  //                   }
+  //               }
+  //           }
+  //       }
+  //       return relationships;
+  //   };
+  //   JsonApiDatastore.prototype.isHasManyObject = function (data) {
+  //     return _.isArray(data) && _.every(data, function (x) { return x instanceof json_api_model_1.JsonApiModel; });
+  //   };
 
   private extractQueryData<T extends JsonApiModel>(res: any, modelType: ModelType<T>): T[] {
     let body: any = res.json();
