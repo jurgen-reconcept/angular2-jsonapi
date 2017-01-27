@@ -20,17 +20,17 @@ export class JsonApiDatastore {
   constructor(private http: Http) {
   }
 
-  query<T extends JsonApiModel>(modelType: ModelType<T>, params?: any, headers?: Headers): Observable<T[]> {
+  query<T extends JsonApiModel>(modelType: ModelType<T>, params?: any, headers?: Headers, customEndpoint?:string): Observable<T[]> {
     let options: RequestOptions = this.getOptions(headers);
-    let url: string = this.buildUrl(modelType, params);
+    let url: string = this.buildUrl(modelType, params, null, customEndpoint);
     return this.http.get(url, options)
         .map((res: any) => this.extractQueryData(res, modelType))
         .catch((res: any) => this.handleError(res));
   }
 
-  findRecord<T extends JsonApiModel>(modelType: ModelType<T>, id: string, params?: any, headers?: Headers): Observable<T> {
+  findRecord<T extends JsonApiModel>(modelType: ModelType<T>, id: string, params?: any, headers?: Headers, customEndpoint?:string): Observable<T> {
     let options: RequestOptions = this.getOptions(headers);
-    let url: string = this.buildUrl(modelType, params, id);
+    let url: string = this.buildUrl(modelType, params, id, customEndpoint);
     return this.http.get(url, options)
         .map((res: any) => this.extractRecordData(res, modelType))
         .catch((res: any) => this.handleError(res));
@@ -97,11 +97,14 @@ export class JsonApiDatastore {
     this._headers = headers;
   }
 
-  private buildUrl<T extends JsonApiModel>(modelType: ModelType<T>, params?: any, id?: string): string {
-    let typeName: string = Reflect.getMetadata('JsonApiModelConfig', modelType).type;
+  private buildUrl<T extends JsonApiModel>(modelType: ModelType<T>, params?: any, id?: string, customEndpoint?:string): string {
+    let typeName: string;
     let baseUrl: string = Reflect.getMetadata('JsonApiDatastoreConfig', this.constructor).baseUrl;
     let idToken: string = id ? `/${id}` : null;
-    return [baseUrl, typeName, idToken, (params ? '?' : ''), this.toQueryString(params)].join('');
+    // if no custom endpoint is supplied, use the default endpoint based on the type
+    if(!customEndpoint)
+      typeName = Reflect.getMetadata('JsonApiModelConfig', modelType).type;
+    return [baseUrl, customEndpoint, typeName, idToken, (params ? '?' : ''), this.toQueryString(params)].join('');
   }
 
   private getRelationships(data: any): any {
