@@ -6,12 +6,14 @@ import { JsonApiDatastore, ModelType } from '../services/json-api-datastore.serv
 export class JsonApiModel {
 
   id: string;
+  type: string;
   [key: string]: any;
 
   constructor(private _datastore: JsonApiDatastore, data?: any) {
     
     if (data) {
       this.id = data.id;
+      this.type = data.type;
       _.extend(this, data.attributes);
       //make all relationships directly available on object
       _.extend(this, data.relationships);
