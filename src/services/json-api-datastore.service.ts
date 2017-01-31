@@ -113,7 +113,7 @@ export class JsonApiDatastore {
     let relationships: any;
     for (let key in data) {
       if (data.hasOwnProperty(key)) {
-        if (data[key] instanceof JsonApiModel) {
+        if (data[key] instanceof JsonApiModel || this.isHasManyObject(data[key])) {
           relationships = relationships || {};
 
           if(_.isArray(data[key])){
@@ -143,6 +143,9 @@ export class JsonApiDatastore {
     }
     return relationships;
   }
+  private isHasManyObject = function (data:any) {
+    return _.isArray(data) && _.every(data, function (x) { return x instanceof JsonApiModel; });
+  };
 
   private extractQueryData<T extends JsonApiModel>(res: any, modelType: ModelType<T>): T[] {
     let body: any = res.json();
