@@ -11,9 +11,11 @@ export class JsonApiModel {
 
   constructor(private _datastore: JsonApiDatastore, data?: any) {
     
+    // explicitly set the type shortcode
+    this.type = Reflect.getMetadata('JsonApiModelConfig', this.constructor).type;
+
     if (data) {
       this.id = data.id;
-      this.type = data.type;
       _.extend(this, data.attributes);
       //make all relationships directly available on object
       _.extend(this, data.relationships);
