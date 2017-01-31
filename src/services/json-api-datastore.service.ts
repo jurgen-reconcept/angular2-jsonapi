@@ -151,6 +151,14 @@ export class JsonApiDatastore {
     let body: any = res.json();
     let models: T[] = [];
     body.data.forEach((data: any) => {
+      
+      // try to find a model for the type property (or use passed modelType as fallback)
+      if(data.type){
+        let mT: ModelType<T> = Reflect.getMetadata('JsonApiDatastoreConfig', this.constructor).models[data.type];
+        if(mT)
+          modelType = mT;
+      }
+
       let model: T = new modelType(this, data);
       this.addToStore(model);
       if (body.included) {
