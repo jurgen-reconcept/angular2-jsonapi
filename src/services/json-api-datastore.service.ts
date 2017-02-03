@@ -4,6 +4,7 @@ import { Http, Headers, RequestOptions, Response } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import { ErrorObservable } from 'rxjs/observable/ErrorObservable';
 import 'rxjs/add/operator/map';
+import 'rxjs/add/operator/share';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/observable/throw';
 import { JsonApiModel } from '../models/json-api.model';
@@ -25,7 +26,8 @@ export class JsonApiDatastore {
     let url: string = this.buildUrl(modelType, params, null, customEndpoint);
     return this.http.get(url, options)
         .map((res: any) => this.extractQueryData(res, modelType))
-        .catch((res: any) => this.handleError(res));
+        .catch((res: any) => this.handleError(res))
+        .share();
   }
 
   findRecord<T extends JsonApiModel>(modelType: ModelType<T>, id: string, params?: any, headers?: Headers, customEndpoint?:string): Observable<T> {
@@ -33,7 +35,8 @@ export class JsonApiDatastore {
     let url: string = this.buildUrl(modelType, params, id, customEndpoint);
     return this.http.get(url, options)
         .map((res: any) => this.extractRecordData(res, modelType))
-        .catch((res: any) => this.handleError(res));
+        .catch((res: any) => this.handleError(res))
+        .share();
   }
 
   createRecord<T extends JsonApiModel>(modelType: ModelType<T>, data?: any): T {
@@ -75,14 +78,16 @@ export class JsonApiDatastore {
         .map((res: any) => this.extractRecordData(res, modelType, model))
         .map((res: any) => this.resetMetadataAttributes(res, attributesMetadata, modelType))
         .map((res: any) => this.updateRelationships(res, relationships))
-        .catch((res: any) => this.handleError(res));
+        .catch((res: any) => this.handleError(res))
+        .share();
   }
 
   deleteRecord<T extends JsonApiModel>(modelType: ModelType<T>, id: string, headers?: Headers): Observable<Response> {
     let options: RequestOptions = this.getOptions(headers);
     let url: string = this.buildUrl(modelType, null, id);
     return this.http.delete(url, options)
-        .catch((res: any) => this.handleError(res));
+        .catch((res: any) => this.handleError(res))
+        .share();
   }
 
   peekRecord<T extends JsonApiModel>(modelType: ModelType<T>, id: string): T {
